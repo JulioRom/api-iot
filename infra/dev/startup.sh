@@ -23,5 +23,6 @@ if [ ! -d "iot-dev" ]; then
 fi
 cd iot-dev
 
-echo "Reiniciando la VM para aplicar cambios de permisos"
-sudo reboot
+echo "✅ Docker y docker-compose instalados correctamente"
+echo "🧪 Cambios de grupo aplicados, pero es necesario iniciar una nueva sesión para que surtan efecto"
+echo "❌ Reboot automático omitido para no cortar la conexión SSH desde GitHub Actions"
