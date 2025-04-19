@@ -13,16 +13,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run tests
-        run: mvn -f api/pom.xml test
-
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: '21'
 
+      - name: Run tests (solo módulo API)
+        run: mvn -pl api -am test
+
       - name: Build API (DEV)
-        run: mvn -f api/pom.xml clean package -DskipTests
+        run: mvn -pl api -am clean package -DskipTests
 
       - name: Docker Build
         run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/iot-api:dev ./api
@@ -36,9 +36,7 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Docker Push
-        run: |
-          gcloud auth configure-docker
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/iot-api:dev
+        run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/iot-api:dev
 
       - name: SSH deploy to DEV VM
         uses: appleboy/ssh-action@master
