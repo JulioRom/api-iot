@@ -39,15 +39,20 @@ jobs:
       - name: Docker Push (Artifact Registry)
         run: docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
 
-      - name: SSH deploy to DEV VM
+      - name: SSH deploy to PROD VM
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.GCP_VM_IP_PROD }}
           username: ${{ secrets.GCP_VM_USER_PROD }}
           key: ${{ secrets.GCP_VM_SSH_KEY_PROD }}
           script: |
-            cd ~/iot-prod
+            cd ~
+            if [ ! -d "iot-prod" ]; then
+              git clone --branch master https://github.com/JulioRom/api-iot.git iot-prod
+            fi
+            cd iot-prod
             git pull origin master
-            docker compose -f docker-compose.deploy.yml down
-            docker compose -f docker-compose.deploy.yml build
-            docker compose -f docker-compose.deploy.yml up -d
+
+            docker-compose -f docker-compose.deploy.yml down || true
+            docker-compose -f docker-compose.deploy.yml pull
+            docker-compose -f docker-compose.deploy.yml up -d

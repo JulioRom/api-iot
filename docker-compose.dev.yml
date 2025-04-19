@@ -15,9 +15,7 @@ services:
       - iot-net
 
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: southamerica-west1-docker.pkg.dev/iot-minero-api-prod/iot-api/iot-api:dev
     container_name: api-iot
     ports:
       - "8080:8080"
@@ -30,7 +28,7 @@ services:
       DB_PASSWORD: 1234
       KAFKA_HOST: 186.64.120.248
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
