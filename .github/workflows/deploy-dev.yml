@@ -46,8 +46,15 @@ jobs:
           username: ${{ secrets.GCP_VM_USER_DEV }}
           key: ${{ secrets.GCP_VM_SSH_KEY_DEV }}
           script: |
-            cd ~/iot-dev
+            cd ~
+            if [ ! -d "iot-dev" ]; then
+              git clone --branch develop https://github.com/JulioRom/api-iot.git iot-dev
+            fi
+            cd iot-dev
             git pull origin develop
-            docker compose -f docker-compose.dev.yml down
-            docker compose -f docker-compose.dev.yml build
-            docker compose -f docker-compose.dev.yml up -d
+
+            # Usamos docker-compose en vez de docker compose
+            docker-compose -f docker-compose.dev.yml down || true
+            docker-compose -f docker-compose.dev.yml build
+            docker-compose -f docker-compose.dev.yml up -d
+      
