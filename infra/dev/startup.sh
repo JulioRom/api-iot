@@ -6,7 +6,7 @@
 sudo apt update
 sudo apt install -y docker.io git -y
 sudo systemctl enable docker
-sudo usermod -aG docker $USER
+sudo usermod -aG docker julio
 
 # Instalar Docker Compose v2
 DOCKER_COMPOSE_VERSION="2.24.1"
