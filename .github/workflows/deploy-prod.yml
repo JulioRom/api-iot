@@ -6,8 +6,8 @@ on:
       - master
 
 jobs:
-  deploy-dev:
-    name: Build & Deploy to DEV
+  deploy-prod:
+    name: Build & Deploy to PROD
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +22,7 @@ jobs:
       - name: Run tests (solo módulo API)
         run: mvn -pl api -am test
 
-      - name: Build API (DEV)
+      - name: Build API (PROD)
         run: mvn -pl api -am clean package -DskipTests
 
       - name: GCP Auth
