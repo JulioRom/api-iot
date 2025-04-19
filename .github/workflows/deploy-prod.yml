@@ -6,15 +6,14 @@ on:
       - master
 
 jobs:
-  deploy-prod:
-    name: Build & Deploy API to GCP
+  deploy-dev:
+    name: Build & Deploy to DEV
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up JDK 21
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: '21'
@@ -23,30 +22,31 @@ jobs:
       - name: Run tests (solo módulo API)
         run: mvn -pl api -am test
 
-      - name: Build API with Maven
+      - name: Build API (DEV)
         run: mvn -pl api -am clean package -DskipTests
 
-      - name: Build Docker image
-        run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/iot-api:prod ./api
-
-      - name: Authenticate to GCP
+      - name: GCP Auth
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Docker Push
-        run: |
-          gcloud auth configure-docker
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/iot-api:prod
+      - name: Docker auth GCP
+        run: gcloud auth configure-docker southamerica-west1-docker.pkg.dev
 
-      - name: SSH into GCP VM and deploy containers PROD
+      - name: Docker Build (Artifact Registry)
+        run: docker build -t southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod ./api
+
+      - name: Docker Push (Artifact Registry)
+        run: docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
+
+      - name: SSH deploy to DEV VM
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.GCP_VM_IP_PROD }}
-          username: ${{ secrets.GCP_VM_USER_PROD }}
-          key: ${{ secrets.GCP_VM_SSH_KEY_PROD }}
+          host: ${{ secrets.GCP_VM_IP_DEV }}
+          username: ${{ secrets.GCP_VM_USER_DEV }}
+          key: ${{ secrets.GCP_VM_SSH_KEY_DEV }}
           script: |
-            cd ~/api-iot
+            cd ~/iot-prod
             git pull origin master
             docker compose -f docker-compose.deploy.yml down
             docker compose -f docker-compose.deploy.yml build
