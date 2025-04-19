@@ -1,9 +1,9 @@
 variable "project_id" {
-  default = "iot-prod-1804"
+  default = "iot-minero-api-prod"
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  default = "southamerica-west1-b"
 }
 
 variable "vm_name" {

@@ -1,46 +1,74 @@
-HELP.md
+# ===============================
+# JAVA + MAVEN
+# ===============================
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
+*.class
+*.jar
+*.war
+*.ear
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# ===============================
+# IDEs
+# ===============================
+# IntelliJ
+.idea/
 *.iml
 *.ipr
+*.iws
 
-### NetBeans ###
+# VSCode
+.vscode/
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# Spring Tool Suite
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
 
-*.json
-.gcp/
+# ===============================
+# Terraform
+# ===============================
+*.tfstate
+*.tfstate.*
+*.lock.hcl
+.terraform/
+.terraform.lock.hcl
+*_v*.exe
 
-### ignorar archivos terraform #####
-# Terraform - solo ignorar lo generado automáticamente
-infra/terraform/.terraform/
-infra/terraform/*.tfstate
-infra/terraform/*.tfstate.*
-infra/terraform/*.lock.hcl
-infra/terraform/*_v*.exe
+# Si quieres ignorar terraform state por carpeta:
+infra/**/.terraform/
+infra/**/terraform.tfstate*
+infra/**/.terraform.lock.hcl
 
+# ===============================
+# Docker
+# ===============================
+*.log
+*.pid
+.env
+docker-compose.override.yml
 
+# ===============================
+# Otros
+# ===============================
+*.DS_Store
+*.swp
+*.bak
+
+# ===============================
+# Excepciones si necesitas incluir algo
+# ===============================
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/

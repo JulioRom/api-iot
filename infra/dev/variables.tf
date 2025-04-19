@@ -1,5 +1,5 @@
 variable "project_id" {
-  default = "iot-dev-1804"
+  default = "iot-minero-api-prod"
 }
 
 variable "zone" {
