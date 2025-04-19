@@ -1,15 +1,43 @@
-variable "project_id" {
-  default = "iot-minero-api-prod"
+##############################################
+# variables.tf - Variables para entorno DEV  #
+##############################################
+
+variable "project" {
+  description = "ID del proyecto de GCP"
+  type        = string
+}
+
+variable "region" {
+  description = "Región de GCP"
+  type        = string
 }
 
 variable "zone" {
-  default = "southamerica-west1-a"
+  description = "Zona de GCP"
+  type        = string
 }
 
-variable "vm_name" {
-  default = "iot-vm-dev"
+variable "instance_name" {
+  description = "Nombre de la instancia VM"
+  type        = string
 }
 
 variable "machine_type" {
-  default = "e2-micro"
+  description = "Tipo de máquina de la VM"
+  type        = string
+}
+
+variable "ssh_user" {
+  description = "Usuario SSH para acceso a la instancia"
+  type        = string
+}
+
+variable "ssh_pub_key_path" {
+  description = "Ruta local a la clave pública SSH"
+  type        = string
+}
+
+variable "service_account_email" {
+  description = "Email de la Service Account usada por la instancia"
+  type        = string
 }

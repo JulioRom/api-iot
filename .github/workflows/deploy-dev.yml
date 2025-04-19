@@ -54,7 +54,7 @@ jobs:
             git pull origin develop
 
             # Usamos docker-compose en vez de docker compose
-            docker-compose -f docker-compose.dev.yml down || true
-            docker-compose -f docker-compose.dev.yml pull
-            docker-compose -f docker-compose.dev.yml up -d
+            sudo docker compose -f docker-compose.dev.yml down || true
+            sudo docker compose -f docker-compose.dev.yml pull
+            sudo docker compose -f docker-compose.dev.yml up -d
       

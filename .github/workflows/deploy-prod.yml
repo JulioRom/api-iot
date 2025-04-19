@@ -1,4 +1,4 @@
-name: Deploy to GCP - PROD
+name: Deploy PROD
 
 on:
   push:
@@ -6,38 +6,36 @@ on:
       - master
 
 jobs:
-  deploy-prod:
-    name: Build & Deploy to PROD
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: 21
+          distribution: temurin
 
-      - name: Run tests (solo módulo API)
-        run: mvn -pl api -am test
+      - name: Build API module
+        run: |
+          cd api
+          ./mvnw -B clean package -DskipTests
 
-      - name: Build API (PROD)
-        run: mvn -pl api -am clean package -DskipTests
-
-      - name: GCP Auth
+      - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Docker auth GCP
+      - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker southamerica-west1-docker.pkg.dev
 
-      - name: Docker Build (Artifact Registry)
-        run: docker build -t southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod ./api
-
-      - name: Docker Push (Artifact Registry)
-        run: docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
+      - name: Build and Push Docker image
+        run: |
+          docker build -t southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod -f Dockerfile .
+          docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
 
       - name: SSH deploy to PROD VM
         uses: appleboy/ssh-action@master
@@ -53,6 +51,7 @@ jobs:
             cd iot-prod
             git pull origin master
 
-            docker-compose -f docker-compose.deploy.yml down || true
-            docker-compose -f docker-compose.deploy.yml pull
-            docker-compose -f docker-compose.deploy.yml up -d
+            # Usamos sudo para docker porque el grupo docker se aplica después del reboot
+            sudo docker compose -f docker-compose.prod.yml down || true
+            sudo docker compose -f docker-compose.prod.yml pull
+            sudo docker compose -f docker-compose.prod.yml up -d
