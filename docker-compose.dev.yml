@@ -19,6 +19,7 @@ services:
     container_name: api-iot
     ports:
       - "8080:8080"
+      - "6000:6000"
     depends_on:
       - postgres
     environment:

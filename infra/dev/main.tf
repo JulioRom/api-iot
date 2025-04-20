@@ -13,6 +13,7 @@ resource "google_compute_instance" "iot_vm_dev" {
   machine_type = var.machine_type
   zone         = var.zone
 
+
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-11"
@@ -42,5 +43,22 @@ resource "google_compute_instance" "iot_vm_dev" {
   }
 
   # Etiquetas útiles para reglas de firewall o segmentación
-  tags = ["dev"]
+  tags = ["dev","allow-tcp-6000"]
+}
+
+resource "google_compute_firewall" "allow_tcp_6000" {
+  name    = "allow-tcp-6000"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6000"]
+  }
+
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"] # Acceso desde cualquier IP
+
+  target_tags = ["allow-tcp-6000"]
+
+  description = "Permitir tráfico TCP en el puerto 6000 desde cualquier IP"
 }
