@@ -1,25 +1,33 @@
 # IoT Mining System - Simulación y Procesamiento de Sensores en Tiempo Real
 
-Este proyecto representa una arquitectura moderna orientada a microservicios para un sistema de **telemetría y simulación de sensores IoT** en un entorno minero. Su propósito es simular sensores físicos (como los basados en **ESP32 vía TCP/IP** y **Zigbee vía MQTT/Kafka**) y procesar los datos en tiempo real a través de una API REST desarrollada en **Java Spring Boot**.
+Este proyecto representa una arquitectura moderna orientada a microservicios para un sistema de **telemetría, simulación y procesamiento de sensores IoT** en un entorno minero. El objetivo es simular sensores físicos como **ESP32 vía TCP/IP** y **Zigbee vía MQTT/Kafka**, recibiendo y procesando sus datos en tiempo real mediante una API desarrollada en **Java Spring Boot**.
 
 ---
 
 ## 🧠 Descripción General
 
-El sistema está compuesto por 3 microservicios principales:
+El sistema se compone de:
 
-1. **API IoT (api)**  
-   Gestiona sensores, ubicaciones, empresas, roles y permisos. Expone endpoints REST y recibe datos de sensores por TCP o Kafka.
+1. **API IoT (Spring Boot)**
+   - Expone endpoints REST para gestionar sensores, ubicaciones, empresas, usuarios y permisos.
+   - Recibe datos en tiempo real mediante TCP o Kafka.
+   - Implementa un listener TCP personalizado y un consumidor Kafka.
 
-2. **Simulador TCP (tcp-simulator)**  
-   Simula sensores físicos que envían datos mediante conexiones TCP/IP, imitando el comportamiento de dispositivos ESP32.
+2. **Simuladores** *(para entorno de pruebas)*
+   - **Simulador TCP (ESP32)**: simula sensores que envían datos vía conexión TCP.
+   - **Simulador Kafka (Zigbee/MQTT)**: simula sensores que publican datos a un tópico Kafka.
 
-3. **Simulador Kafka (kafka-simulator)**  
-   Simula sensores Zigbee que publican datos en tópicos Kafka (como si estuviesen conectados por un Gateway MQTT/Zigbee).
+3. **Infraestructura como Código (Terraform)**
+   - Provisión de máquinas virtuales en GCP.
+   - Configuración de firewall, redes y permisos.
+
+4. **CI/CD Automatizado (GitHub Actions)**
+   - Build, push y despliegue de contenedores en VM GCP mediante SSH.
+   - Terraform se integra para automatizar entornos dev y prod.
 
 ---
 
-### **Estructura del JSON** que recibe el servidor TCP/MQTT:
+## ⚙️ Formato de Datos Esperado (TCP/Kafka):
 
 ```json
 {
@@ -33,130 +41,100 @@ El sistema está compuesto por 3 microservicios principales:
   ]
 }
 ```
----
-### 📦 Arquitectura del Proyecto
-
-```
-iot-mining-system/
-├── api/                  # API REST principal con Spring Boot
-├── simulators/
-│   ├── kafka-simulator/  # Microservicio para simular sensores Kafka/Zigbee
-│   └── tcp-simulator/    # Microservicio para simular sensores TCP/ESP32
-├── docker/
-│   ├── docker-compose.yml   # Orquestación completa del sistema
-│   └── .env                 # Variables de entorno (opcional)
-└── postman/             # Colección de pruebas Postman para endpoints y simuladores
-```
 
 ---
 
-## 🐳 Microservicios Dockerizados
-
-### 1. API IoT
-
-| Variable                           | Descripción                                       |
-|------------------------------------|---------------------------------------------------|
-| `SPRING_PROFILES_ACTIVE`           | Entorno de ejecución (`integration` recomendado) |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`    | Configuración PostgreSQL                         |
-| `KAFKA_BOOTSTRAP_SERVERS`          | Broker Kafka (`kafka:9092`)                      |
-| `TCP_ENABLED`                      | Habilita recepción por TCP                       |
-| `KAFKA_ENABLED`                    | Habilita recepción por Kafka                     |
-
----
-
-### 2. TCP Simulator
-
-| Variable                      | Descripción                                           |
-|-------------------------------|-------------------------------------------------------|
-| `SPRING_PROFILES_ACTIVE`      | Entorno de ejecución                                 |
-| `TCP_SIMULATOR_API_KEY`       | ApiKey del sensor simulado                           |
-| `TCP_SIMULATOR_DELAY_MS`      | Frecuencia de envío de datos en milisegundos         |
-| `TCP_SERVER_HOST`             | IP/host objetivo donde enviar los datos              |
-| `TCP_SERVER_PORT`             | Puerto objetivo del servidor TCP (ej. 9999)          |
-
----
-
-### 3. Kafka Simulator
-
-| Variable                        | Descripción                                           |
-|---------------------------------|-------------------------------------------------------|
-| `SPRING_PROFILES_ACTIVE`        | Entorno de ejecución                                 |
-| `KAFKA_BOOTSTRAP_SERVERS`       | Broker Kafka (`kafka:9092`)                          |
-| `KAFKA_SIMULATOR_API_KEY`       | ApiKey del sensor simulado                           |
-| `KAFKA_SIMULATOR_DELAY_MS`      | Frecuencia de envío de datos                         |
-| `KAFKA_TOPIC`                   | Tópico Kafka a publicar (ej. `iot-sensor-data`)      |
-
----
-
-## 🚀 ¿Cómo levantar todo?
+## 📦 Estructura del Proyecto
 
 ```bash
-docker compose up --build
+api-iot/
+├── api/                        # Servicio Spring Boot principal
+│   ├── TcpSensorServer.java    # Servidor TCP
+│   ├── TcpSensorListener.java  # Manejador de sockets TCP
+│   └── SensorDataTCPProcessor.java  # Procesador de datos TCP
+
+├── simulators/                 # Microservicios de simulación
+│   └── tcp-simulator/          # Simulador de sensores ESP32 por TCP
+│       ├── Esp32Simulator.java
+│       ├── Esp32SimulatorConfig.java
+│       └── Esp32SimulatorManager.java
+
+├── infra/                      # Infraestructura con Terraform
+│   ├── dev/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── terraform.tfvars
+│   └── startup.sh              # Script de arranque para VMs
 ```
-
-Esto levantará:
-
-- PostgreSQL
-- Kafka + Zookeeper
-- Kafka UI (para monitorear tópicos)
-- API REST
-- Simulador TCP
-- Simulador Kafka
-
-Todos conectados a través de la red `iot-net`.
 
 ---
 
-## 📮 Pruebas con Postman
+## 🐳 Docker y Variables de Entorno
 
-Incluimos una colección de pruebas ubicada en:
+### API IoT
 
+| Variable                   | Descripción                        |
+|----------------------------|------------------------------------|
+| SPRING_PROFILES_ACTIVE     | Perfil Spring (ej: `dev`)         |
+| DB_HOST / DB_USER / ...    | Credenciales PostgreSQL           |
+| KAFKA_HOST                 | Host Kafka                        |
+
+### TCP Simulator
+
+| Variable                    | Descripción                        |
+|-----------------------------|------------------------------------|
+| TCP_SIMULATOR_API_KEY       | ApiKey sensor simulado             |
+| TCP_SERVER_HOST / PORT      | IP y puerto del listener TCP       |
+
+---
+
+## 🚀 Despliegue con Docker
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
 ```
-/postman/IoT Minero - Full System.postman_collection.json
-```
 
-Permite:
+Servicios involucrados:
+- PostgreSQL
+- API IoT
+- (Opcional) Kafka + Zookeeper + Kafka UI
 
-- Verificar endpoints REST
-- Iniciar/detener simuladores
-- Probar flujos completos
-- Validar recepción de datos por TCP/Kafka
+---
+
+## 🧪 Pruebas Postman
+
+Disponible en: `postman/IoT Minero - Full System.postman_collection.json`
+
+Incluye:
+- Endpoints REST CRUD
+- Test de flujo TCP
+- Test de flujo Kafka
 
 ---
 
 ## ✅ Estado Actual
 
-- [x] API REST funcional (sensores, ubicación, empresa, usuarios)
-- [x] Recepción de datos por TCP
-- [x] Recepción de datos desde Kafka
-- [x] Simuladores separados por microservicio
-- [x] Dockerizado completo
-- [x] Pruebas Postman
-- [ ] CI/CD pipeline en Jenkins (en desarrollo)
-- [ ] Despliegue a EC2 (en progreso)
+- [x] API REST funcional (CRUD y lógica empresarial)
+- [x] Listener TCP y Kafka Consumer
+- [x] Terraform en GCP (Infraestructura)
+- [x] Docker y Compose por entorno
+- [x] GitHub Actions para CI/CD
+- [x] Simuladores separados por entorno
+- [x] Scripts de arranque automatizados
 
 ---
 
-## 📌 Tecnologías Usadas
+## 🧱 Tecnologías
 
-- Java 21 + Spring Boot 3
-- Kafka + Kafka UI
-- PostgreSQL
-- Docker + Docker Compose
-- Postman
-- TCP/IP Socket Programming
-- Multi-threaded Producers
-
----
-
-## 🧪 Próximos pasos
-
-- [ ] Integrar métricas con Prometheus y Grafana
-- [ ] Validar integración en entorno de staging
-- [ ] Despliegue con CI/CD en AWS EC2
+- **Java 21 / Spring Boot**
+- **Kafka / Zookeeper**
+- **PostgreSQL**
+- **Docker / Docker Compose**
+- **Terraform / GCP**
+- **GitHub Actions**
 
 ---
 
-## 🧑‍💻 Autores
+## 👨‍💻 Autor
 
-- Grupo Uno - Ingeniería de Software
+Grupo Uno
