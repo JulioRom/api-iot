@@ -54,6 +54,6 @@ jobs:
             git pull origin master
 
             # Usamos sudo para docker porque el grupo docker se aplica después del reboot
-            sudo docker-compose -f docker-compose.prod.yml down || true
-            sudo docker-compose -f docker-compose.prod.yml pull
-            sudo docker-compose -f docker-compose.prod.yml up -d
+            sudo docker-compose -f docker-compose.deploy.yml down || true
+            sudo docker-compose -f docker-compose.deploy.yml pull
+            sudo docker-compose -f docker-compose.deploy.yml up -d
