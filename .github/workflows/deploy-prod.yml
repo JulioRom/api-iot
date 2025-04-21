@@ -16,26 +16,28 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: 21
-          distribution: temurin
+          java-version: '21'
+          distribution: 'temurin'
 
-      - name: Build API module
-        run: |
-          cd api
-          ./mvnw -B clean package -DskipTests
+      - name: Run tests (solo módulo API)
+        run: mvn -pl api -am test
 
-      - name: Authenticate with GCP
+      - name: Build API (PROD)
+        run: mvn -pl api -am clean package -DskipTests
+
+      - name: GCP Auth
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Configure Docker for Artifact Registry
+      - name: Docker auth GCP
         run: gcloud auth configure-docker southamerica-west1-docker.pkg.dev
 
-      - name: Build and Push Docker image
-        run: |
-          docker build -t southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod -f Dockerfile .
-          docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
+      - name: Docker Build (Artifact Registry)
+        run: docker build -t southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod ./api
+
+      - name: Docker Push (Artifact Registry)
+        run: docker push southamerica-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/iot-api/iot-api:prod
 
       - name: SSH deploy to PROD VM
         uses: appleboy/ssh-action@master
