@@ -15,9 +15,7 @@ services:
       - iot-net
 
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: southamerica-west1-docker.pkg.dev/iot-minero-api-prod/iot-api/iot-api:prod
     container_name: api-iot
     ports:
       - "8080:8080"

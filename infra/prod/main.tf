@@ -42,5 +42,21 @@ resource "google_compute_instance" "iot_vm_prod" {
   }
 
   # Etiquetas de ambiente para futuras reglas de red o monitoreo
-  tags = ["prod"]
+  tags = ["prod","allow-tcp-6000"]
+}
+resource "google_compute_firewall" "allow_tcp_6000" {
+  name    = "allow-tcp-6000"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6000"]
+  }
+
+  direction     = "INGRESS"
+  source_ranges = ["0.0.0.0/0"] # Acceso desde cualquier IP
+
+  target_tags = ["allow-tcp-6000"]
+
+  description = "Permitir tráfico TCP en el puerto 6000 desde cualquier IP"
 }
