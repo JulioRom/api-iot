@@ -1,0 +1,72 @@
+{
+  "id": null,
+  "uid": null,
+  "title": "API Health Monitoring",
+  "tags": [
+    "api",
+    "spring boot",
+    "prometheus"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 30,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "API Uptime (Availability)",
+      "targets": [
+        {
+          "expr": "up{job=\"api_dev\"}",
+          "legendFormat": "Dev API",
+          "refId": "A"
+        },
+        {
+          "expr": "up{job=\"api_prod\"}",
+          "legendFormat": "Prod API",
+          "refId": "B"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Request Latency",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_sum{job=~\"api_.*\"}[1m]) / rate(http_server_requests_seconds_count{job=~\"api_.*\"}[1m])",
+          "legendFormat": "{{job}} latency",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Error Rate (5xx responses)",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])",
+          "legendFormat": "{{job}} 5xx",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    }
+  ]
+}

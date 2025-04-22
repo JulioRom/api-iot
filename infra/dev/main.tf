@@ -35,6 +35,9 @@ resource "google_compute_instance" "iot_vm_dev" {
   metadata = {
     ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_path)}"
   }
+  labels = {
+    env = "dev"
+  }
 
   # Asignación de Service Account con permisos y scopes necesarios
   service_account {
@@ -43,7 +46,7 @@ resource "google_compute_instance" "iot_vm_dev" {
   }
 
   # Etiquetas útiles para reglas de firewall o segmentación
-  tags = ["dev","allow-tcp-6000"]
+  tags = ["dev","allow-tcp-6000","http-server", "https-server"]
 }
 
 resource "google_compute_firewall" "allow_tcp_6000" {

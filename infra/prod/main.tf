@@ -35,6 +35,10 @@ resource "google_compute_instance" "iot_vm_prod" {
     ssh-keys = "${var.ssh_user}:${file(var.ssh_pub_key_path)}"
   }
 
+  labels = {
+    env = "prod"
+  }
+
   # Asignación de Service Account y alcance completo a APIs
   service_account {
     email  = var.service_account_email
@@ -42,7 +46,7 @@ resource "google_compute_instance" "iot_vm_prod" {
   }
 
   # Etiquetas de ambiente para futuras reglas de red o monitoreo
-  tags = ["prod","allow-tcp-6000"]
+  tags = ["prod","allow-tcp-6000","http-server", "https-server"]
 }
 resource "google_compute_firewall" "allow_tcp_6000" {
   name    = "allow-tcp-6000"
